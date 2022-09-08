@@ -133,6 +133,7 @@
 	    <td >Interpreter 模式</td>
 	    <td>对一个语言的文法及解释</td>
 	</tr>
+</table>
 
 ## Singleton 模式（ 单例模式）
 Singleton 模式是设计模式中最为简单、最为常见、最容易实现，也是最应该熟悉和掌握的模式。Singleton 模式就是一个类只创建一个唯一的对象，即一次创建多次使用。

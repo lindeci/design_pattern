@@ -235,8 +235,8 @@ int main()
     test01();
 }
 ```
-- 总结：
+<strong>总结：</strong>
 
-- Singleton 不可以被实例化，因此将其构造函数声明private
+1. Singleton 不可以被实例化，因此将其构造函数声明private
 
-Singleton 模式经常和 Factory（AbstractFactory）模式在一起使用，因为系统中工厂对象一般来说只要一个
+2. Singleton 模式经常和 Factory（AbstractFactory）模式在一起使用，因为系统中工厂对象一般来说只要一个

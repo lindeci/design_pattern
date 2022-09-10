@@ -8,7 +8,7 @@ public:
     }
 
 private :
-    A() {
+    A() {   //Singleton 不可以被实例化，因此将其构造函数声明private
         a = new A;
     }
     static A* a; 

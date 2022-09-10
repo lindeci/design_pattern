@@ -239,7 +239,7 @@ int main()
 2、使得具体化类的工作延迟到了子类中。
 
 <strong>举例：</strong>  
-![1](pic/Factory.png "1")
+![image](pic/Factory.png "1")
 ```c++
 //Product.h 
 #ifndef _PRODUCT_H_ 

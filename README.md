@@ -9,6 +9,10 @@
 - [设计模式特点](#设计模式特点)
 - [Singleton 模式（ 单例模式）](#singleton-模式-单例模式)
 - [Factory 模式（工厂模式）](#factory-模式工厂模式)
+- [AbstactFactory 模式（抽象工厂模式）](#abstactfactory-模式抽象工厂模式)
+- [Observer 模式(观察者模式)](#observer-模式观察者模式)
+- [Proxy 模式（代理模式）](#proxy-模式代理模式)
+- [Facade 模式（外观模式）](#facade-模式外观模式)
 
 ## 设计模式概述
 设计模式是软件开发人员在软件开发过程中面临的一般问题的解决方案。这些解决方案是众多软件开发人员经过相当长的一段时间的试验和错误总结出来的解决某一类问题的一种编码方案。
@@ -348,3 +352,528 @@ Product* p = fac->CreateProduct();
 ConcreteProduct  
 - 可以看出，Factory 模式对于对象的创建给予开发人员提供了很好的实现策略，但是Factory 模式仅仅局限于一类类（就是说
 Product 是一类，有一个共同的基类），如果我们要为不同类的类提供一个对象创建的接口，那就要用 AbstractFactory 了。
+
+## AbstactFactory 模式（抽象工厂模式）
+假如我们要买水果，水果的产地来自中国、日本、美国，每个国家的水果种类都可以分为苹果、香蕉、梨子。作为开发者，我们就不得不创建苹果类（香蕉和梨子类似），然后每种苹果都继承自苹果类。每上架一个国家的苹果我们都要实现一次苹果类，这样就会有成千上万的苹果类需要被创建，AbstractFactory 模式就是用来解决这类问题的：要创建一组相关或者相互依赖的对象。  
+<strong>举例：</strong>
+![image](pic/AbstactFactory.png "1")
+```c++
+//抽象工厂模式
+#include <iostream>
+using namespace std;
+
+//苹果的抽象
+class AbstractApple {
+public:
+    virtual void showName() = 0;
+};
+
+//中国苹果
+class ChinaApple :public AbstractApple {
+public:
+    virtual void showName() {
+        cout << "中国苹果" << endl;
+    }
+};
+
+//美国苹果
+class USAApple :public AbstractApple {
+public:
+    virtual void showName() {
+        cout << "美国苹果" << endl;
+    }
+};
+
+//日本苹果
+class JapanApple :public AbstractApple {
+public:
+    virtual void showName() {
+        cout << "日本苹果" << endl;
+    }
+};
+
+//香蕉的抽象
+class AbstractBanana {
+public:
+    virtual void showName() = 0;
+};
+
+//中国香蕉
+class ChinaBanana :public AbstractBanana {
+public:
+    virtual void showName() {
+        cout << "中国香蕉" << endl;
+    }
+};
+
+//美国香蕉
+class USABanana :public AbstractBanana {
+public:
+    virtual void showName() {
+        cout << "美国香蕉" << endl;
+    }
+};
+
+//日本香蕉
+class JapanBanana :public AbstractBanana {
+public:
+    virtual void showName() {
+        cout << "日本香蕉" << endl;
+    }
+};
+
+//鸭梨的抽象
+class AbstractPear {
+public:
+    virtual void showName() = 0;
+};
+
+//中国鸭梨
+class ChinaPear :public AbstractPear {
+public:
+    virtual void showName() {
+        cout << "中国鸭梨" << endl;
+    }
+};
+
+//美国鸭梨
+class USAPear :public AbstractPear {
+public:
+    virtual void showName() {
+        cout << "美国鸭梨" << endl;
+    }
+};
+
+//日本鸭梨
+class JapanPear :public AbstractPear {
+public:
+    virtual void showName() {
+        cout << "日本鸭梨" << endl;
+    }
+};
+
+//抽象工厂  针对产品族
+class AbstractFactory {
+public:
+    virtual AbstractApple* CreateApple() = 0;
+    virtual AbstractBanana* CreateBanana() = 0;
+    virtual AbstractPear* CreatePear() = 0;
+};
+
+//中国工厂
+class ChinaFactory :public AbstractFactory {
+    virtual AbstractApple* CreateApple() {
+        return new ChinaApple;
+    }
+    virtual AbstractBanana* CreateBanana() {
+        return new ChinaBanana;
+    }
+    virtual AbstractPear* CreatePear() {
+        return new ChinaPear;
+    }
+};
+
+//美国工厂
+class USAFactory :public AbstractFactory {
+    virtual AbstractApple* CreateApple() {
+        return new USAApple;
+    }
+    virtual AbstractBanana* CreateBanana() {
+        return new USABanana;
+    }
+    virtual AbstractPear* CreatePear() {
+        return new USAPear;
+    }
+};
+
+//日本工厂
+class JapanFactory :public AbstractFactory {
+    virtual AbstractApple* CreateApple() {
+        return new JapanApple;
+    }
+    virtual AbstractBanana* CreateBanana() {
+        return new JapanBanana;
+    }
+    virtual AbstractPear* CreatePear() {
+        return new JapanPear;
+    }
+};
+
+void test01() {
+    AbstractFactory* factory = NULL;
+    AbstractApple* apple = NULL;
+    AbstractBanana* Banana = NULL;
+    AbstractPear* Pear = NULL;
+
+    //中国工厂
+    factory = new ChinaFactory;
+    apple = factory->CreateApple();
+    Banana = factory->CreateBanana();
+    Pear = factory->CreatePear();
+
+    apple->showName();
+    Banana->showName();
+    Pear->showName();
+
+    delete Pear;
+    delete apple;
+    delete Banana;
+    delete factory;
+}
+
+int main()
+{
+    test01();
+}
+```
+<strong>总结：</strong>  
+AbstractFactory 模式和 Factory模式的区别是初学（使用）设计模式时候的一个容易引起困惑的地方。实际上，AbstractFactory模式是为创建一组（有多类）相关或依赖的对象提供创建接口，而 Factory模式是为一类对象提供创建接口或延迟对象的创建到子类中实现。并且可以看到，AbstractFactory模式通常都是使用 Factory 模式实现。
+
+## Observer 模式(观察者模式)
+Observer 模式要解决的问题为：建立一个一（Subject）对多（Observer）的依赖关系，并且做到当“一”变化的时候，依赖这个“一”的多也能够同步改变。最常见的一个例子就是：对同一组数据进行统计分析时候，我们希望能够提供多种形式的表示（例如以表格进行统计显示、柱状图统计显示、百分比统计显示等）。指多个对象间存在一对多的依赖关系，当一个对象的状态发生改变时，所有依赖于它的对象都得到通知并被自动更新。
+
+<strong>举例：</strong>  
+Subject 提供依赖于它的观察者 Observer 的注册（registerObserver）和注销（remove）操作，并且提供了使得依赖于它的所有观察者同步的操作（notifyObserver），观察者 Observer 则提供一个 Update 操作，注意这里的 Observer 的 Update 操作并不在 Observer 改变了 Subject 目标状态的时候就对自己进行更新，这个更新操作要延迟到 Subject 对象发出 Notify 通知所有Observer 进行修改（调用 Update）。
+![image](pic/Observer.png)
+```c++
+#include <iostream>
+#include <list>
+using namespace std;
+
+//抽象的英雄 抽象的观察者  Observer
+class AbstractHero {
+public:
+    virtual void Update() = 0;
+};
+
+//具体的英雄 具体的观察者 
+class HeroA :public AbstractHero {
+public:
+    HeroA() {
+        cout << "英雄A正在鲁BOSS" << endl;
+    }
+    virtual void Update() {
+        cout << "英雄A停止撸，待机状态" << endl;
+    }
+};
+
+class HeroB :public AbstractHero {
+public:
+    HeroB() {
+        cout << "英雄B正在鲁BOSS" << endl;
+    }
+    virtual void Update() {
+        cout << "英雄B停止撸，待机状态" << endl;
+    }
+
+};
+
+class HeroC :public AbstractHero {
+public:
+    HeroC() {
+        cout << "英雄C正在鲁BOSS" << endl;
+    }
+    virtual void Update() {
+        cout << "英雄C停止撸，待机状态" << endl;
+    }
+};
+
+class HeroD :public AbstractHero {
+public:
+    HeroD() {
+        cout << "英雄D正在鲁BOSS" << endl;
+    }
+    virtual void Update() {
+        cout << "英雄D停止撸，待机状态" << endl;
+    }
+};
+
+class HeroE :public AbstractHero {
+public:
+    HeroE() {
+        cout << "英雄E正在鲁BOSS" << endl;
+    }
+    virtual void Update() {
+        cout << "英雄E停止撸，待机状态" << endl;
+    }
+};
+
+//定义抽象的观察目标  Subject
+class AbstractBoss {
+public:
+    //    添加观察者
+    virtual void addHero(AbstractHero* hero) = 0;
+    //    删除观察者
+    virtual void deleteHero(AbstractHero* hero) = 0;
+    //    通知所有观察者
+    virtual void notifv() = 0;
+};
+
+//相对于 concreteSubject
+class BOSSA :public AbstractBoss {
+public:
+    //    添加观察者
+    virtual void addHero(AbstractHero* hero) {
+        pHeroList.push_back(hero);
+    }
+    //    删除观察者
+    virtual void deleteHero(AbstractHero* hero) {
+        pHeroList.remove(hero);
+    }
+    //    通知所有观察者
+    virtual void notifv() {
+        for (list<AbstractHero*>::iterator it = pHeroList.begin(); it != pHeroList.end(); it++) {
+            (*it)->Update();
+        }
+    }
+
+    list<AbstractHero*> pHeroList;
+};
+
+void test01() {
+    //    创建观察者
+    AbstractHero* heroA = new HeroA;
+    AbstractHero* heroB = new HeroB;
+    AbstractHero* heroC = new HeroC;
+    AbstractHero* heroD = new HeroD;
+    AbstractHero* heroE = new HeroE;
+
+    //    创建观察目标
+    AbstractBoss* bossA = new BOSSA;
+    bossA->addHero(heroA);
+    bossA->addHero(heroB);
+    bossA->addHero(heroC);
+    bossA->addHero(heroD);
+    bossA->addHero(heroE);
+
+    cout << "heroC阵亡" << endl;
+    bossA->deleteHero(heroC);
+
+    cout << "Boss死了，通知其他英雄停止攻击。。。" << endl;
+    bossA->notifv();
+
+}
+
+int main() {
+
+    test01();
+    return 0;
+}
+```
+<strong>优点：</strong>   
+观察者和被观察者是抽象耦合的。
+建立一套触发机制。  
+<strong>缺点：</strong>  
+1、如果在观察者和观察目标之间有循环依赖的话，观察目标会触发它们之间进行循环调用，可能导致系统崩溃。  
+2、观察者模式没有相应的机制让观察者知道所观察的目标对象是怎么发生变化的，而仅仅只是知道观察目标发生了变化。
+
+## Proxy 模式（代理模式）
+代理模式（Proxy Pattern）是指为其他对象提供一种代理，以控制对这个对象的访问。 代理对象在客服端和目标对象之间起到中介作用。
+
+在生活中，我们经常见到这样的场景，如：租房中介、售票黄牛、婚介、经纪人、快递、 事务代理、非侵入式日志监听等，这些都是代理模式的实际体现
+
+<strong>注意事项：</strong>  
+1、和适配器模式的区别：适配器模式主要改变所考虑对象的接口，而代理模式不能改变所代理类的接口。  
+2、和装饰器模式的区别：装饰器模式为了增强功能，而代理模式是为了加以控制。
+
+<strong>举例：</strong>  
+现在有一个操作系统，只需要调用run（）就可以启动操作系统，但是进入操作系统之前必须要进行账户名和密码的认证。认证成功后这个代理才会让你进入操作系统，其中认证的这个过程就是一个代理。
+
+<strong>代码：</strong>  
+```c++
+//代理模式:提供一种代理来控制其他对象的访问
+#include <iostream>
+using namespace std;
+
+class AbstractCommonInterface {
+public:
+    virtual void run() = 0;
+};
+//下面是操作系统类
+class MySystem :public AbstractCommonInterface{
+public:
+    virtual void run() {
+        cout << "系统启动" << endl;
+    }
+};
+
+//代理： 启动系统必须要权限验证,不是所以的人都可以来启动我的系统,必须要提供用户名和密码
+class MySystemProxy :public AbstractCommonInterface {
+public:
+    MySystemProxy(string userName, string password) {
+        this->mUserName = userName;
+        this->mPassword = password;
+        pMySystem = new MySystem;
+    }
+
+    bool checkUserNameAndPassword() {
+        if (mUserName == "admin" && mPassword == "admin") {
+            return true;
+        }
+        return false;
+    }
+    virtual void run() {
+        if (checkUserNameAndPassword() == true) {
+            cout << "启动成功" << endl;
+            this->pMySystem->run();
+        }
+        else {
+            cout << "用户名或者密码错误,权限不足" << endl;
+        }
+    }
+    ~MySystemProxy() {
+        if (pMySystem != NULL) {
+            delete pMySystem;
+        }
+    }
+private:
+    string mUserName;
+    string mPassword;
+    MySystem* pMySystem;
+};
+void test01() {
+    MySystemProxy* proxy = new MySystemProxy("admin", "admin");
+    proxy->run();
+}
+
+int main()
+{
+    test01();
+}
+```
+<strong>总结：</strong>  
+1、和适配器模式的区别：适配器模式主要改变所考虑对象的接口，而代理模式不能改变所代理类的接口。  
+2、和装饰器模式的区别：装饰器模式为了增强功能，而代理模式是为了加以控制
+
+## Facade 模式（外观模式）  
+<strong>外观模式是一个很重要、平常也用得很多的一个设计模式</strong>
+
+实际上在软件系统开发中也经常回会遇到这样的情况，可能你实现了一些接口（模块），而这些接口（模块）都分布在几个类中（比如 A 和 B、C、D）：A 中实现了一些接口，B 中实现一些接口（或者 A 代表一个独立模块，B、C、D 代表另一些独立模块）。然后你的客户程序员（使用你设计的开发人员）只有很少的要知道你的不同接口到底是在那个类中实现的，绝大多数只是想简单的组合你的 A－D 的类的接口，他并不想知道这些接口在哪里实现的。
+
+下面举一个KTV的例子。假如KTV里面有电视机、电灯、音响、DVD、游戏机这些设备。平常KTV包厢里面没人时电灯都是打开的。电视机、音响、游戏机、DVD都是关闭的。当KTV里面有人了那么电灯关闭，其他东西打开。如果要一个一个开和关特别麻烦。这时候就可以使用外观模式，定义一个总开关。
+
+<strong>代码：<strong>  
+```c++
+//外观模式
+#include <iostream>
+using namespace std;
+
+//电视机类
+class Television {
+public:
+    void on() {
+        cout << "电视机打开" << endl;
+    }
+    void off() {
+        cout << "电视机关闭" << endl;
+    }
+};
+
+//灯类
+class Light {
+public:
+    void on() {
+        cout << "灯打开" << endl;
+    }
+    void off() {
+        cout << "灯关闭" << endl;
+    }
+};
+
+//音响
+class Audio {
+public:
+    void on() {
+        cout << "音响打开" << endl;
+    }
+    void off() {
+        cout << "音响关闭" << endl;
+    }
+};
+
+//麦克风
+class Microphone {
+public:
+    void on() {
+        cout << "麦克风打开" << endl;
+    }
+    void off() {
+        cout << "麦克风关闭" << endl;
+    }
+};
+
+//DVD
+class DVDplayer {
+public:
+    void on() {
+        cout << "DVD打开" << endl;
+    }
+    void off() {
+        cout << "DVD关闭" << endl;
+    }
+};
+
+//游戏机
+class GameMachine {
+public:
+    void on() {
+        cout << "游戏机打开" << endl;
+    }
+    void off() {
+        cout << "游戏机关闭" << endl;
+    }
+};
+
+//外观模式
+class KTVMode {
+public:
+    KTVMode() {
+        pTV = new Television;
+        pLight = new Light;
+        pAudio = new Audio;
+        pMicrophone = new Microphone;
+        pDvd = new DVDplayer;
+    }
+
+    void onKTV() {
+        pTV->on();
+        pLight->off();
+        pAudio->on();
+        pMicrophone->on();
+        pDvd->on();
+    }
+
+    void offKTV() {
+        pTV->off();
+        pLight->off();
+        pAudio->off();
+        pMicrophone->off();
+        pDvd->off();
+    }
+
+    ~KTVMode() {
+        delete pTV;
+        delete pLight;
+        delete pAudio;
+        delete pMicrophone;
+        delete pDvd;
+    }
+private:
+    Television* pTV;
+    Light* pLight;
+    Audio* pAudio;
+    Microphone* pMicrophone;
+    DVDplayer* pDvd;
+};
+
+void test01() {
+    KTVMode* ktv = new KTVMode;
+    //KTV包厢来人了
+    ktv->onKTV();
+}
+
+int main()
+{
+    test01();
+}
+```

@@ -59,7 +59,7 @@ void test01() {
     SingletonLazy* p1 = SingletonLazy::getInstance();
     SingletonLazy* p2 = SingletonLazy::getInstance();
     if (p1 == p2) {
-        cout << "单例模式" << endl;
+        cout << "单例模式:SingletonLazy" << endl;
     }
     else {
         cout << "不是单例模式" << endl;
@@ -67,7 +67,7 @@ void test01() {
     SingletonHungry* p3 = SingletonHungry::getInstance();
     SingletonHungry* p4 = SingletonHungry::getInstance();
     if (p3 == p4) {
-        cout << "单例模式" << endl;
+        cout << "单例模式:SingletonHungry" << endl;
     }
     else {
         cout << "不是单例模式" << endl;

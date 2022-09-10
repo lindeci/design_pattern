@@ -11,6 +11,8 @@ add_subdirectory(AbstractFactory)
 add_subdirectory(Observer)
 add_subdirectory(Proxy)
 add_subdirectory(Facade)
+add_subdirectory(Mediator)
+add_subdirectory(State)
 # 指定生成目标
 #add_executable(Singleton $DIR_SRCS)
 #添加可执行文件所需要的库

@@ -13,6 +13,8 @@
 - [Observer 模式(观察者模式)](#observer-模式观察者模式)
 - [Proxy 模式（代理模式）](#proxy-模式代理模式)
 - [Facade 模式（外观模式）](#facade-模式外观模式)
+- [Mediator 模式（中介者模式）](#mediator-模式中介者模式)
+- [State 模式（状态模式）](#state-模式状态模式)
 
 ## 设计模式概述
 设计模式是软件开发人员在软件开发过程中面临的一般问题的解决方案。这些解决方案是众多软件开发人员经过相当长的一段时间的试验和错误总结出来的解决某一类问题的一种编码方案。
@@ -752,7 +754,7 @@ int main()
 
 下面举一个KTV的例子。假如KTV里面有电视机、电灯、音响、DVD、游戏机这些设备。平常KTV包厢里面没人时电灯都是打开的。电视机、音响、游戏机、DVD都是关闭的。当KTV里面有人了那么电灯关闭，其他东西打开。如果要一个一个开和关特别麻烦。这时候就可以使用外观模式，定义一个总开关。
 
-<strong>代码：<strong>  
+<strong>代码：</strong>  
 ```c++
 //外观模式
 #include <iostream>
@@ -877,3 +879,554 @@ int main()
     test01();
 }
 ```
+<strong>总结：</strong>
+1. 和适配器模式的区别：适配器模式主要改变所考虑对象的接口，而代理模式不能改变所代理类的接口。  
+2. 和装饰器模式的区别：装饰器模式为了增强功能，而代理模式是为了加以控制
+
+## Mediator 模式（中介者模式）
+在面向对象系统的设计和开发过程中，对象之间的交互和通信是最为常见的情况，因为对象间的交互本身就是一种通信。在系统比较小的时候，可能对象间的通信不是很多、对象也比较少，我们可以直接硬编码到各个对象的方法中。但是当系统规模变大，对象的量变引起系统复杂度的急剧增加，对象间的通信也变得越来越复杂，这时候我们就要提供一个专门处理对象间交互和通信的类，这个中介者就是 Mediator 模式。所以Mediator 模式的实现关键就是将对象 Colleague 之间的通信封装到一个类种单独处理。
+
+<strong>举例：</strong>
+![image](pic/Mediator1.png)
+<strong>说明：</strong>  
+1、Meadiator是抽象中介者，定义了同事对象到中介者对象的接口。  
+2、Colleague是抽象同事类  
+3、ConcreteMediator是具体的中介者对象，实现抽象方法，他需要知道所有的具体的同事类，用一个集合来管理它们，并接收某个同事的消息，完成相应的任务。  
+4、ConcreteColleague是具体的同事类，会有很多，每个同事只知道自己的行为，而不了解其他同事的行为，它们都依赖中介者对象。  
+<strong>中介者模式的目标：</strong>  
+将网状结构改成星状结构
+![image](pic/Mediator2.png)  
+使用中介者模式后
+![image](pic/Mediator3.png)  
+举例：
+![image](pic/Mediator4.png)  
+<strong>代码：</strong>
+```
+//Colleague.h
+#pragma once
+#include <string>
+
+class Mediator;
+
+class Colleague
+{
+public:
+	Mediator* getMediator();
+	void setMediator(Mediator* const mediator);
+	Colleague(Mediator* mediator);
+	virtual void Notify(std::string message)=0;
+
+private:
+	Mediator* mediator;
+};
+//Colleague.cpp
+#include "Colleague.h"
+#include "Mediator.h"
+
+Mediator* Colleague::getMediator()
+{
+	return mediator;
+}
+
+void Colleague::setMediator(Mediator* const mediator)
+{
+	this->mediator = mediator;
+}
+
+Colleague::Colleague(Mediator* mediator)
+{
+	this->mediator = mediator;
+	this->mediator->add(this);
+}
+
+//ConcreteColleague1.h
+#ifndef _CONCRETECOLLEAGUE1_H_
+#define _CONCRETECOLLEAGUE1_H_
+#include <iostream>
+#include <string>
+#include "Colleague.h"
+#include "Mediator.h"
+class ConcreteColleague1:public Colleague
+{
+public:
+	ConcreteColleague1(Mediator* mediator):Colleague(mediator)
+	{
+	}
+
+	void send(std::string message)
+	{
+		getMediator()->send(message, this);
+	}
+
+	void Notify(std::string message)
+	{
+		std::cout << "同事1收到消息：" + message<<std::endl;
+	}
+};
+#endif
+
+//ConcreteColleague2.h
+#ifndef _CONCRETECOLLEAGUE2_H_
+#define _CONCRETECOLLEAGUE2_H_
+#include <iostream>
+#include <string>
+#include "Colleague.h"
+#include "Mediator.h"
+
+class ConcreteColleague2 :public Colleague
+{
+public:
+	ConcreteColleague2(Mediator* mediator) :Colleague(mediator)
+	{
+	}
+
+	void send(std::string message)
+	{
+		getMediator()->send(message, this);
+	}
+
+	void Notify(std::string message)
+	{
+		std::cout << "同事2收到消息：" + message << std::endl;
+	}
+};
+#endif
+
+//ConcreteMediator.h
+#ifndef _CONCRETEMEDIATOR_H_
+#define _CONCRETEMEDIATOR_H_
+#include <vector>
+#include "Colleague.h"
+#include "Mediator.h"
+class ConcreteMediator:public Mediator
+{
+public:
+	void add(Colleague* colleague)
+	{
+		colleaguesList.push_back(colleague);
+	}
+
+	void send(std::string message, Colleague* colleague)
+	{
+		for (auto value : colleaguesList)
+		{
+			if(value!=colleague)
+			{
+				value->Notify(message);
+			}
+		}
+	}
+private:
+	std::vector<Colleague*> colleaguesList;
+};
+#endif
+
+//Mediator.h
+#ifndef _MEDIATOR_H_
+#define _MEDIATOR_H_
+#include <string>
+#include "Colleague.h"
+class Mediator	
+{
+public:
+	virtual void send(std::string message, Colleague* colleague)=0;
+	virtual void add(Colleague* colleague)=0;
+};
+#endif
+
+//main.cpp
+#include <iostream>
+#include "ConcreteMediator.h"
+#include "ConcreteColleague1.h"
+#include "ConcreteColleague2.h"
+#include "Mediator.h"
+#include "Colleague.h"
+
+using namespace std;
+int main(int argc, char* argv[])
+{
+	Mediator* mediator = new ConcreteMediator();
+	ConcreteColleague1* colleague1 = new ConcreteColleague1(mediator);
+	ConcreteColleague2* colleague2 = new ConcreteColleague2(mediator);
+
+	colleague1->send("早上好啊！");
+	colleague2->send("早安！");
+	return 0;
+}
+```
+<strong>总结：</strong>  
+1、何时使用：多个类相互耦合，形成了网状结构，需要将上述网状结构分离为星型结构的时候。  
+2、中介者承担了较多的责任，一旦中介者出现问题，整个系统都会收到影响。
+
+## State 模式（状态模式）
+每个人、事物在不同的状态下会有不同表现（动作），而一个状态又会在不同的表现下转移到下一个不同的状态（State）。  
+<strong>主要解决：</strong>  
+1、当状态数目不是很多的时候，Switch/Case 可能可以搞定。但是当状态数目很多的时候（实际系统中也正是如此），维护一大组的Switch/Case 语句将是一件异常困难并且容易出错的事情。  
+2、状态逻辑和动作实现没有分离。在很多的系统实现中，动作的实现代码直接写在状态的逻辑当中。这带来的后果就是系统的扩展性和维护得不到保证。  
+<strong>举例：</strong>  
+以抽奖活动为例。
+有四个状态：
+- 【抽奖状态】
+- 【可以抽奖】
+- 【发放奖品】
+- 【奖品已领完】  
+抽奖活动的初始状态为【不能抽奖】状态，在扣除50积分后进入【可以抽奖】状态，【可以抽奖】状态有90%的几率不中奖，不中奖就会回到【抽奖状态】，10%的几率中奖，中奖后进入【发放奖品】状态，当奖品数量为0是进入【奖品已领完】状态。如果用switch/if实现起来比较复杂下面用状态模式实现。
+![image](pic/state1.png)
+<strong>UML图</strong>
+![image](pic/state2.png)
+<strong>代码：</strong>  
+```c++
+//State.h
+#pragma once
+class State
+{
+public:
+	//扣除50积分
+	virtual void deductMeney() = 0;
+
+	//是否中奖
+	virtual bool raffle() = 0;
+
+	//发放奖品
+	virtual void dispensePrize() = 0;
+};
+
+//CanRaffleState.h
+#pragma once
+#include <iostream>
+#include "State.h"
+using namespace std;
+class RaffleActivity;
+//能抽奖状态
+class CanRaffleState :public State
+{
+public:
+	CanRaffleState(RaffleActivity* activity);
+	//已经扣除积分了，不能再扣了
+	void deductMeney() override;
+	//可以抽奖，根据抽奖情况改成新的状态
+	bool raffle() override;
+	void dispensePrize() override;
+private:
+	RaffleActivity* activity;
+};
+
+//CanRaffleState.cpp
+#include "CanRaffleState.h"
+#include "RaffleActivity.h"
+CanRaffleState::CanRaffleState(RaffleActivity* activity)
+{
+	srand(time(NULL));
+	this->activity = activity;
+}
+
+//已经扣除积分了，不能再扣了
+void CanRaffleState::deductMeney() 
+{
+	cout << "已经扣过积分了" << endl;
+}
+
+//可以抽奖，根据抽奖情况改成新的状态
+bool CanRaffleState::raffle()
+{
+	cout << "正在抽奖" << endl;
+	int result = rand() % 10;
+	if (0 == result)
+	{
+		//将activity的状态设置为发放奖品的状态
+		activity->setState(activity->getDispenseState());
+		return true;
+	}
+	else
+	{
+		cout << "很遗憾没有抽中奖品" << endl;
+		//将activity的状态设置为不能抽奖的状态
+		activity->setState(activity->getNoRaffleState());
+		return false;
+	}
+}
+
+void CanRaffleState::dispensePrize()
+{
+	cout << "没中奖，不能发放奖品" << endl;
+}
+
+//RaffleActivity.h
+#pragma once
+#include "State.h"
+class RaffleActivity;
+//奖品发送完毕状态
+class DispenseOutState :public State
+{
+public:
+	DispenseOutState(RaffleActivity* activity);
+	void deductMeney() override;
+	bool raffle() override;
+	//发放奖品
+	void dispensePrize() override;
+
+private:
+	RaffleActivity* activity;
+};
+
+//RaffleActivity.cpp
+#include "DispenseOutState.h"
+#include "RaffleActivity.h"
+
+DispenseOutState::DispenseOutState(RaffleActivity* activity)
+{
+	this->activity = activity;
+}
+
+void DispenseOutState::deductMeney()
+{
+	cout << "奖品已经发完了，请下次再参加" << endl;
+}
+
+bool DispenseOutState::raffle()
+{
+	cout << "奖品已经发完了，请下次再参加" << endl;
+	return false;
+}
+
+//发放奖品
+void DispenseOutState::dispensePrize()
+{
+	cout << "奖品已经发完了，请下次再参加" << endl;
+}
+//RaffleActivity.h
+#pragma once
+#include <iostream>
+#include "State.h"
+
+using namespace std;
+
+class RaffleActivity;
+
+//发放奖品的状态
+class DispenseState :public State
+{
+public:
+	DispenseState(RaffleActivity* activity);
+	void deductMeney() override;
+	bool raffle() override;
+	//发放奖品
+	void dispensePrize() override;
+
+private:
+	RaffleActivity* activity;
+};
+//DispenseState.cpp
+#include "DispenseState.h"
+#include "RaffleActivity.h"
+
+DispenseState::DispenseState(RaffleActivity* activity)
+{
+	this->activity = activity;
+}
+
+void DispenseState::deductMeney()
+{
+	cout << "不能扣除积分" << endl;
+}
+
+bool DispenseState::raffle() 
+{
+	cout << "不能抽奖了" << endl;
+	return false;
+}
+
+//发放奖品
+void DispenseState::dispensePrize()
+{
+	if (activity->getCount() > 0)
+	{
+		cout << "送出奖品" << endl;
+		activity->setState(activity->getNoRaffleState());
+	}
+	else
+	{
+		cout << "很遗憾,奖品发完了" << endl;
+		//奖品已经发完，后面的人就不能抽奖了
+		activity->setState(activity->getDispenseOutState());
+	}
+}
+//RaffleActivity.h
+#pragma once
+#include <iostream>
+#include "State.h"
+
+using namespace std;
+class RaffleActivity;
+
+//不能抽奖状态
+class NoRaffleState :public State
+{
+public:
+	NoRaffleState(RaffleActivity* activity);
+	//在不能抽奖状态是可以扣积分的，扣除积分后设置成可以抽奖状态
+	void deductMeney() override;
+	bool raffle() override;
+	void dispensePrize() override;
+
+private:
+	//初始化时传入活动，扣除积分后改变其状态
+	RaffleActivity* activity;
+};
+
+//NoRaffleState.cpp
+#include "NoRaffleState.h"
+#include "RaffleActivity.h";
+
+NoRaffleState::NoRaffleState(RaffleActivity* activity)
+{
+	this->activity = activity;
+}
+
+//在不能抽奖状态是可以扣积分的，扣除积分后设置成可以抽奖状态
+void NoRaffleState::deductMeney()
+{
+	std::cout << "扣除50积分，可以抽奖了" << endl;
+	activity->setState(activity->getCanRaffleState());
+}
+
+bool NoRaffleState::raffle()
+{
+	cout << "扣了积分才能抽奖" << endl;
+	return false;
+}
+
+void NoRaffleState::dispensePrize()
+{
+	cout << "不能发奖品" << endl;
+}
+
+//RaffleActivity.h
+#pragma once
+#include "CanRaffleState.h"
+#include "DispenseOutState.h"
+#include "DispenseState.h"
+#include "State.h"
+#include "NoRaffleState.h"
+
+class RaffleActivity
+{
+public:
+	State* getState() const{
+		return state;
+	}
+	void setState(State* const state)
+	{
+		this->state = state;
+	}
+
+	int getCount()
+	{
+		return count--;
+	}
+
+	void setCount(const int count)
+	{
+		this->count = count;
+	}
+
+	State* getNoRaffleState() const
+	{
+		return noRaffleState;
+	}
+
+	void setNoRaffleState(State* const noRaffleState)
+	{
+		this->noRaffleState = noRaffleState;
+	}
+
+	State* getCanRaffleState() const
+	{
+		return canRaffleState;
+	}
+
+	void setCanRaffleState(State* const canRaffleState)
+	{
+		this->canRaffleState = canRaffleState;
+	}
+
+	State* getDispenseState() const
+	{
+		return dispenseState;
+	}
+
+	void setDispenseState(State* const dispenseState)
+	{
+		this->dispenseState = dispenseState;
+	}
+
+	State* getDispenseOutState() const
+	{
+		return dispenseOutState;
+	}
+
+	void setDispenseOutState(State* const dispenseOutState)
+	{
+		this->dispenseOutState = dispenseOutState;
+	}
+
+	RaffleActivity(int count)
+	{
+		//初始化当前状态为 不能抽奖状态
+		this->state = getNoRaffleState();
+		//初始化奖品数量
+		this->count = count;
+	}
+
+	//扣分，调用当前状态的deductMoney
+	void deductMoney()
+	{
+		state->deductMeney();
+	}
+
+	//抽奖
+	void raffle()
+	{
+		//如果抽中奖了，则领奖品
+		if (state->raffle())
+		{
+			state->dispensePrize();
+		}
+	}
+
+private:
+	//state表示活动当前的状态
+	State* state = nullptr;
+	//奖品数量
+	int count = 0;
+	//四个属性 表示四种状态
+	State* noRaffleState = new NoRaffleState(this);
+	State* canRaffleState = new CanRaffleState(this);
+	State* dispenseState = new DispenseState(this);
+	State* dispenseOutState = new DispenseOutState(this);
+};
+
+//main.cpp
+#include <iostream>
+#include "RaffleActivity.h"
+using namespace std;
+int main(int argc, char* argv[])
+{
+	RaffleActivity* activity = new RaffleActivity(1);
+
+	for(int i=0;i<50;i++)
+	{
+		cout << "第" << i << "次抽奖" << endl;
+		activity->deductMoney();
+		activity->raffle();
+		cout << endl;
+	}
+	return 0;
+}
+```
+<strong>优点：</strong>  
+1、封装了转换规则。  
+2、枚举可能的状态，在枚举状态之前需要确定状态种类。  
+3、将所有与某个状态有关的行为放到一个类中，并且可以方便地增加新的状态，只需要改变对象状态即可改变对象的行为。  
+4、允许状态转换逻辑与状态对象合成一体，而不是某一个巨大的条件语句块。  
+5、可以让多个环境对象共享一个状态对象，从而减少系统中对象的个数。

@@ -9,6 +9,13 @@
 - [设计模式特点](#设计模式特点)
 - [Singleton 模式（ 单例模式）](#singleton-模式-单例模式)
 - [Factory 模式（工厂模式）](#factory-模式工厂模式)
+- [简单工厂模式](#简单工厂模式)
+  - [流程](#流程)
+  - [结构图](#结构图)
+  - [代码](#代码)
+  - [简单工厂模式的简化](#简单工厂模式的简化)
+    - [结构图](#结构图-1)
+    - [代码](#代码-1)
 - [AbstactFactory 模式（抽象工厂模式）](#abstactfactory-模式抽象工厂模式)
 - [Observer 模式(观察者模式)](#observer-模式观察者模式)
 - [Proxy 模式（代理模式）](#proxy-模式代理模式)
@@ -354,6 +361,142 @@ Product* p = fac->CreateProduct();
 ConcreteProduct  
 - 可以看出，Factory 模式对于对象的创建给予开发人员提供了很好的实现策略，但是Factory 模式仅仅局限于一类类（就是说
 Product 是一类，有一个共同的基类），如果我们要为不同类的类提供一个对象创建的接口，那就要用 AbstractFactory 了。
+
+## 简单工厂模式
+### 流程
+1. 将需要创建的各种不同对象（例如各种不同的Chart对象）的相关代码给封装到不同的类中，这些类称为具体产品类。
+2. 将他们公共的代码进行抽象和提取后封装在一个抽象产品类中，每一个具体产品类都是抽象产品类的子类。
+3. 提供一个工厂类用于创建各种产品，在工厂类中提供一个创建产品的工厂方法，该方法可以根据所传入的参数不同创建不同的具体产品对象。
+4. 客户端只需要调用工厂类的工厂方法并传入相应的参数即可得到一个产品对象。
+### 结构图
+![image](pic/Factory2.png "1")
+### 代码
+```cpp
+// 抽象产品类
+struct Chart
+{
+	virtual void display() = 0;
+};
+
+// 柱状图类：具体产品类
+class HistogramChart : public Chart
+{
+public:
+	HistogramChart() {
+		cout << "【 创建柱状图 】" << endl;
+	}
+	void display() {
+		cout << "【 显示柱状图 】" << endl;
+	}
+};
+
+// 饼状图类：具体产品类
+class PieChart : public Chart
+{
+public:
+	PieChart() {
+		cout << "【 创建饼状图 】" << endl;
+	}
+	void display() {
+		cout << "【 显示饼状图 】" << endl;
+	}
+};
+
+// 折线图类：具体产品类
+class LineChart : public Chart
+{
+public:
+	LineChart() {
+		cout << "【 创建折线状图 】" << endl;
+	}
+	void display() {
+		cout << "【 显示折线状图 】" << endl;
+	}
+};
+
+// 图表工厂类： 工厂类
+class ChartFactory
+{
+public:
+	// 静态工厂方法
+	static Chart* getchart(string type)
+	{
+		Chart* chart = nullptr;
+		if (type == "histogram") {
+			chart = new HistogramChart();
+			cout << "【 初始化设置柱状图 】" << endl;
+		}
+		else if (type == "pie") {
+			chart = new PieChart();
+			cout << "【 初始化设置饼状图 】" << endl;
+		}
+		else if (type == "line") {
+			chart = new LineChart();
+			cout << "【 初始化设置折线状图 】" << endl;
+		}
+
+		return chart;
+	}
+};
+
+
+// Client
+int main(void)
+{
+	Chart* chart = nullptr;
+
+	// 通过静态工厂方法创建产品
+	chart = ChartFactory::getchart("histogram");
+	chart->display();
+
+	return 0;
+}
+```
+### 简单工厂模式的简化
+#### 结构图
+![image](pic/Factory3.png "1")
+#### 代码
+```cpp
+// 抽象产品类
+struct Chart
+{
+	virtual void display() = 0;
+	static Chart* getchart(const string& type);
+};
+
+Chart* Chart::getchart(string type)
+{
+	Chart* chart = nullptr;
+	if (type == "histogram") {
+		chart = new HistogramChart();
+		cout << "【 初始化设置柱状图 】" << endl;
+	}
+	else if (type == "pie") {
+		chart = new PieChart();
+		cout << "【 初始化设置饼状图 】" << endl;
+	}
+	else if (type == "line") {
+		chart = new LineChart();
+		cout << "【 初始化设置折线状图 】" << endl;
+	}
+	else {
+		cout << "【 类型不存在 】" << endl;
+	}
+
+		return chart;
+}
+
+
+int main(void)
+{
+	Chart* chart = nullptr;
+
+	chart = Chart::getchart("line");
+	chart->display();
+
+	return 0;
+}
+```
 
 ## AbstactFactory 模式（抽象工厂模式）
 假如我们要买水果，水果的产地来自中国、日本、美国，每个国家的水果种类都可以分为苹果、香蕉、梨子。作为开发者，我们就不得不创建苹果类（香蕉和梨子类似），然后每种苹果都继承自苹果类。每上架一个国家的苹果我们都要实现一次苹果类，这样就会有成千上万的苹果类需要被创建，AbstractFactory 模式就是用来解决这类问题的：要创建一组相关或者相互依赖的对象。  
